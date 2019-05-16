@@ -35,14 +35,14 @@ ALTER TABLE actor
 DROP COLUMN description;
 
 -- 4a. List the last names of actors, as well as how many actors have that last name.
-SELECT last_name, COUNT(*)
+SELECT last_name, COUNT(*) AS '	Number of Actors'
 FROM actor
 GROUP BY last_name
 HAVING COUNT(*) > 1;
 
 -- 4b. List last names of actors and the number of actors who have that last name, 
 -- but only for names that are shared by at least two actors
-SELECT last_name, COUNT(*)
+SELECT last_name, COUNT(*) AS 'Number of Repeated Last Names'
 FROM actor
 GROUP BY last_name
 HAVING COUNT(*) > 2;
@@ -80,14 +80,14 @@ address.address_id = staff.address_id;
 
 -- 6b. Display the total amount rung up by each staff member
 --     in August of 2005. Use tables staff and payment.
-SELECT staff_id, SUM(amount) 
+SELECT staff_id, SUM(amount) AS 'Income on Ago-05'
 FROM payment
 WHERE payment_date LIKE '%2005-08%'
 GROUP BY staff_id;
 
 -- 6c. List each film and the number of actors who are listed for that film. 
 --     Use tables film_actor and film.
-SELECT title, COUNT(actor_id)
+SELECT title, COUNT(actor_id) AS 'Actors per Film'
 FROM film_actor
 INNER JOIN film ON
 film.film_id = film_actor.film_id
@@ -96,7 +96,8 @@ ORDER BY COUNT(actor_id) DESC;
 
 -- 6d. How many copies of the film Hunchback Impossible exist in the inventory system?
     -- Finding the film_id value for that specific film.
-    SELECT film_id FROM film
+    SELECT film_id
+    FROM film
     WHERE title IN ('hunchback impossible'); -- film_id = 439
         -- Counting how many copies do exist for the 'film_id=439' value
         SELECT COUNT(store_id)
@@ -107,7 +108,7 @@ ORDER BY COUNT(actor_id) DESC;
 
 -- 6e. Using the tables payment and customer and the JOIN command, 
 -- list the total paid by each customer. List the customers alphabetically by last name
-SELECT first_name, last_name, SUM(amount)
+SELECT first_name, last_name, SUM(amount) AS 'Total Paid'
 FROM payment
 INNER JOIN customer ON 
 	payment.customer_id = customer.customer_id
@@ -159,7 +160,7 @@ FROM film
 WHERE rating IN ('g','pg','pg-13');
 
 -- 7e. Display the most frequently rented movies in descending order.
-SELECT title, COUNT(*)
+SELECT title, COUNT(*) AS 'Times rented'
 FROM film
 INNER JOIN inventory ON
 inventory.film_id = film.film_id
@@ -168,4 +169,26 @@ WHERE inventory_id IN (
     FROM rental)
 GROUP BY title
 HAVING COUNT(*) > 0
-ORDER BY COUNT(*) desc;
+ORDER BY COUNT(*) DESC;
+
+-- 8. Create view.
+CREATE VIEW Canadian AS 
+    SELECT customer_id, first_name, last_name, email
+    FROM customer
+    WHERE address_id IN (
+	SELECT address_id
+        FROM address
+        WHERE city_id IN (
+	    SELECT city_id
+            FROM city
+            INNER JOIN country ON
+	    city.country_id = country.country_id
+	    WHERE country IN ('canada')));
+			      
+			      
+-- 8b. How would you display the view that you created in 8a?
+SELECT * FROM canadian
+ORDER BY customer_id ASC;
+
+-- 8c. Write a query to delete it.
+DROP VIEW canadian;
